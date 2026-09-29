@@ -9,7 +9,7 @@ import {
   POKEMON_TYPES,
   type PokemonType,
 } from "@/lib/queries";
-import { PAGE_SIZE, getIdFromUrl } from "@/lib/pokeapi";
+import { PAGE_SIZE, getIdFromUrl, type PokemonListItem, type PokemonListResponse } from "@/lib/pokeapi";
 import PokemonCard from "./pokemon-card";
 
 // Colores oficiales para cada tipo
@@ -79,17 +79,20 @@ export default function PokemonList({ page }: { page: number }) {
     );
   }
 
-  // ─── Normalizar datos según el modo ───
-  let results: { name: string; url: string }[] = [];
+  // ─── Normalizar datos según el modo (con type narrowing) ───
+  let results: PokemonListItem[] = [];
   let totalCount = 0;
   let totalPages = 1;
 
   if (selectedType === "all") {
-    results = data.results;
-    totalCount = data.count;
+    // data es PokemonListResponse
+    const listData = data as PokemonListResponse;
+    results = listData.results;
+    totalCount = listData.count;
     totalPages = Math.ceil(totalCount / PAGE_SIZE);
   } else {
-    results = data; // ya viene como array plano
+    // data es PokemonListItem[]
+    results = data as PokemonListItem[];
     totalCount = results.length;
   }
 
@@ -196,7 +199,7 @@ export default function PokemonList({ page }: { page: number }) {
               filteredResults.length !== 1 ? "s" : ""
             }`
           : selectedType === "all"
-          ? `Mostrando ${data.results.length} de ${totalCount} Pokémon`
+          ? `Mostrando ${results.length} de ${totalCount} Pokémon`
           : `${totalCount} Pokémon en total`}
       </p>
 
